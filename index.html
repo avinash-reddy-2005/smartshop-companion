@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartShop Companion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #10b981;
+            --accent-color: #f59e0b;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .transition-300 {
+            transition: all 0.3s ease;
+        }
+
+        .chat-container {
+            height: 70vh;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 60vh;
+            }
+        }
+
+        .speech-wave {
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .speech-wave span {
+            display: block;
+            width: 0.2rem;
+            height: 0.2rem;
+            background: var(--primary-color);
+            margin: 0 0.1rem;
+            border-radius: 50%;
+            animation: speech-wave 1s infinite ease-in-out;
+        }
+
+        .speech-wave span:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .speech-wave span:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .speech-wave span:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        .speech-wave span:nth-child(5) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes speech-wave {
+            0%, 40%, 100% {
+                transform: scaleY(0.4);
+            }
+            20% {
+                transform: scaleY(1);
+            }
+        }
+
+        .compare-highlight {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                background-color: rgba(245, 158, 11, 0.1);
+            }
+            50% {
+                background-color: rgba(245, 158, 11, 0.3);
+            }
+            100% {
+                background-color: rgba(245, 158, 11, 0.1);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <img src="https://placehold.co/40x40" alt="SmartShop logo with shopping cart and AI icon" class="rounded-full">
+                <h1 class="text-xl font-bold text-gray-800">SmartShop Companion</h1>
+            </div>
+            <nav class="hidden md:flex items-center space-x-6">
+                <a href="#products" class="text-gray-600 hover:text-indigo-600 transition-300">Products</a>
+                <a href="#recommendations" class="text-gray-600 hover:text-indigo-600 transition-300">Recommendations</a>
+                <a href="#comparison" class="text-gray-600 hover:text-indigo-600 transition-300">Compare</a>
+                <button id="voice-btn" class="bg-indigo-100 text-indigo-600 p-2 rounded-full hover:bg-indigo-200 transition-300">
+                    <i class="fas fa-microphone"></i>
+                </button>
+            </nav>
+            <button id="mobile-menu-btn" class="md:hidden text-gray-600">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+                <a href="#products" class="text-gray-600 hover:text-indigo-600 transition-300">Products</a>
+                <a href="#recommendations" class="text-gray-600 hover:text-indigo-600 transition-300">Recommendations</a>
+                <a href="#comparison" class="text-gray-600 hover:text-indigo-600 transition-300">Compare</a>
+                <button id="voice-btn-mobile" class="text-left text-gray-600 hover:text-indigo-600 transition-300">
+                    <i class="fas fa-microphone mr-2"></i>Voice Assistant
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Hero section -->
+        <section class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-8 mb-10 text-white">
+            <div class="max-w-3xl">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Your Personal Shopping Assistant</h2>
+                <p class="text-lg mb-6">Discover, compare, and get personalized recommendations for the best products tailored just for you.</p>
+                <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+                    <button id="explore-btn" class="bg-white text-indigo-600 px-6 py-3 rounded-lg font-medium hover:bg-opacity-90 transition-300">
+                        Explore Products
+                    </button>
+                    <button id="chat-toggle" class="bg-indigo-700 px-6 py-3 rounded-lg font-medium hover:bg-opacity-90 transition-300">
+                        <i class="fas fa-comment-dots mr-2"></i>Chat Assistant
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Add Product Section -->
+        <section class="mb-12 bg-white rounded-xl shadow p-6">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Add New Product</h2>
+            <form id="product-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="product-name" class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+                    <input type="text" id="product-name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="product-brand" class="block text-sm font-medium text-gray-700 mb-1">Brand</label>
+                    <input type="text" id="product-brand" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="product-category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <select id="product-category" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">Select a category</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Clothing">Clothing</option>
+                        <option value="Home & Kitchen">Home & Kitchen</option>
+                        <option value="Books">Books</option>
+                        <option value="Beauty">Beauty</option>
+                        <option value="Sports">Sports</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="product-price" class="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+                    <input type="number" id="product-price" min="0" step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div class="md:col-span-2">
+                    <label for="product-description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea id="product-description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                </div>
+                <div class="md:col-span-2">
+                    <label for="product-image" class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                    <input type="text" id="product-image" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="https://placehold.co/600x400">
+                </div>
+                <div class="md:col-span-2 flex justify-end">
+                    <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-300">
+                        Add Product
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Products Section -->
+        <section id="products" class="mb-12">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 sm:mb-0">Product Catalog</h2>
+                <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+                    <div class="relative">
+                        <select id="filter-category" class="appearance-none bg-white border border-gray-300 rounded-lg pl-4 pr-8 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">All Categories</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Clothing">Clothing</option>
+                            <option value="Home & Kitchen">Home & Kitchen</option>
+                            <option value="Books">Books</option>
+                            <option value="Beauty">Beauty</option>
+                            <option value="Sports">Sports</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <select id="filter-brand" class="appearance-none bg-white border border-gray-300 rounded-lg pl-4 pr-8 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">All Brands</option>
+                            <!-- Brands will be populated by JavaScript -->
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <select id="filter-price" class="appearance-none bg-white border border-gray-300 rounded-lg pl-4 pr-8 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">All Prices</option>
+                            <option value="0-50">$0 - $50</option>
+                            <option value="50-100">$50 - $100</option>
+                            <option value="100-200">$100 - $200</option>
+                            <option value="200-500">$200 - $500</option>
+                            <option value="500-1000">$500 - $1000</option>
+                            <option value="1000-">$1000+</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="products-container">
+                <!-- Products will be populated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Recommendations Section -->
+        <section id="recommendations" class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Personalized Recommendations</h2>
+            <p class="text-gray-600 mb-6">Based on your preferences and browsing history, we recommend these products for you.</p>
+            
+            <div class="bg-white rounded-xl shadow p-6 mb-6">
+                <h3 class="text-xl font-semibold mb-4 text-gray-800">Your Preferences</h3>
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <span class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm">Electronics</span>
+                    <span class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm">Under $200</span>
+                    <span class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm">High Ratings</span>
+                </div>
+                <button id="update-prefs" class="text-indigo-600 hover:text-indigo-800 font-medium">Update Preferences</button>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="recommendations-container">
+                <!-- Recommendations will be populated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Comparison Section -->
+        <section id="comparison" class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Product Comparison</h2>
+            <div id="comparison-empty" class="bg-white rounded-xl shadow p-8 text-center">
+                <img src="https://placehold.co/200x200" alt="Comparison dashboard illustration with side-by-side product boxes" class="mx-auto mb-6 rounded-lg">
+                <h3 class="text-xl font-semibold mb-2 text-gray-800">No Products Selected for Comparison</h3>
+                <p class="text-gray-600 mb-4">Select products from the catalog to compare their features and prices.</p>
+                <button id="btn-browse-compare" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-300">
+                    Browse Products
+                </button>
+            </div>
+            <div id="comparison-table-container" class="hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Comparing <span id="compare-count">0</span> Products</h3>
+                    <button id="clear-comparison" class="text-red-500 hover:text-red-700 font-medium flex items-center">
+                        <i class="fas fa-times mr-1"></i> Clear All
+                    </button>
+                </div>
+                <div class="bg-white rounded-xl shadow overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Feature</th>
+                                    <!-- Comparison product headers will be added by JavaScript -->
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="comparison-table-body">
+                                <!-- Comparison data will be added by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Chat Assistant Modal -->
+    <div id="chat-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="absolute bottom-0 right-0 w-full max-w-md h-4/5 bg-white rounded-t-xl shadow-lg flex flex-col">
+            <div class="bg-indigo-600 text-white px-4 py-3 rounded-t-xl flex justify-between items-center">
+                <h3 class="text-lg font-medium">Shopping Assistant</h3>
+                <button id="close-chat" class="text-white hover:text-indigo-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="flex-1 p-4 overflow-y-auto chat-container" id="chat-messages">
+                <div class="flex mb-4">
+                    <img src="https://placehold.co/40x40" alt="AI assistant avatar with friendly face in blue color scheme" class="w-10 h-10 rounded-full mr-3">
+                    <div class="bg-gray-100 rounded-lg p-3 max-w-xs">
+                        <p class="text-gray-800">Hello! I'm your SmartShop assistant. How can I help you today? You can ask about products, recommendations, or comparisons.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-200">
+                <div class="relative">
+                    <input type="text" id="chat-input" placeholder="Type your message..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 pr-12">
+                    <button id="send-message" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-indigo-600 hover:text-indigo-800">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <button id="voice-input-btn" class="mt-2 flex items-center text-indigo-600 text-sm">
+                    <i class="fas fa-microphone mr-2"></i> Use voice input
+                </button>
+            </div>
+            <div id="voice-recording" class="hidden px-4 pb-4">
+                <div class="bg-gray-100 rounded-lg p-3 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="speech-wave mr-3">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <span class="text-gray-800">Listening...</span>
+                    </div>
+                    <button id="stop-voice" class="bg-red-500 text-white px-3 py-1 rounded-full text-sm">
+                        <i class="fas fa-stop"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voice Assistant Modal -->
+    <div id="voice-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="absolute bottom-0 right-0 w-full max-w-md bg-white rounded-t-xl shadow-lg">
+            <div class="bg-indigo-600 text-white px-4 py-3 rounded-t-xl flex justify-between items-center">
+                <h3 class="text-lg font-medium">Voice Assistant</h3>
+                <button id="close-voice" class="text-white hover:text-indigo-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6 text-center">
+                <div class="mb-6">
+                    <img src="https://placehold.co/150x150" alt="Animated microphone icon with sound waves radiating outward" class="mx-auto">
+                </div>
+                <div id="voice-status" class="mb-4">
+                    <p class="text-gray-600">Click the microphone to start speaking</p>
+                </div>
+                <button id="start-voice" class="bg-indigo-600 text-white p-4 rounded-full hover:bg-indigo-700 transition-300">
+                    <i class="fas fa-microphone text-2xl"></i>
+                </button>
+                <div id="voice-instructions" class="mt-6 text-left bg-gray-100 p-4 rounded-lg">
+                    <h4 class="font-medium mb-2 text-gray-800">Try saying:</h4>
+                    <ul class="list-disc list-inside text-gray-600 text-sm">
+                        <li>"Show me laptops under $1000"</li>
+                        <li>"Compare iPhone and Samsung phones"</li>
+                        <li>"Recommend smartwatches for fitness"</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <div class="flex items-center space-x-2 mb-3">
+                        <img src="https://placehold.co/40x40" alt="SmartShop logo with shopping cart and AI icon" class="rounded-full">
+                        <h2 class="text-xl font-bold">SmartShop Companion</h2>
+                    </div>
+                    <p class="text-gray-400">Your personal shopping assistant powered by AI.</p>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-8">
+                    <div>
+                        <h3 class="text-sm font-semibold uppercase tracking-wider mb-3">Shop</h3>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-gray-400 hover:text-white transition-300">Products</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition-300">Deals</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition-300">New Arrivals</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold uppercase tracking-wider mb-3">Help</h3>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-gray-400 hover:text-white transition-300">FAQ</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition-300">Contact</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition-300">Privacy Policy</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold uppercase tracking-wider mb-3">Connect</h3>
+                        <div class="flex space-x-4">
+                            <a href="#" class="text-gray-400 hover:text-white transition-300"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" class="text-gray-400 hover:text-white transition-300"><i class="fab fa-twitter"></i></a>
+                            <a href="#" class="text-gray-400 hover:text-white transition-300"><i class="fab fa-instagram"></i></a>
+                            <a href="#" class="text-gray-400 hover:text-white transition-300"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400 text-sm">
+                <p>&copy; 2023 SmartShop Companion. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mock product data
+        const mockProducts = [
+            {
+                id: 1,
+                name: "Ultra HD Smart TV",
+                brand: "Sony",
+                category: "Electronics",
+                price: 999.99,
+                description: "65-inch 4K Ultra HD Smart LED TV with HDR and Android TV",
+                image: "https://placehold.co/600x400?text=Sony+TV",
+                rating: 4.8,
+                features: {
+                    "Screen Size": "65 inches",
+                    "Resolution": "4K Ultra HD",
+                    "Smart Features": "Android TV",
+                    "Connectivity": "Wi-Fi, Bluetooth, HDMI x4",
+                    "Weight": "48.5 lbs"
+                }
+            },
+            {
+                id: 2,
+                name: "Wireless Noise-Canceling Headphones",
+                brand: "Bose",
+                category: "Electronics",
+                price: 349.00,
+                description: "Premium wireless headphones with industry-leading noise cancellation",
+                image: "https://placehold.co/600x400?text=Bose+Headphones",
+                rating: 4.7,
+                features: {
+                    "Battery Life": "Up to 20 hours",
+                    "Noise Cancellation": "Active Noise Cancelling",
+                    "Connectivity": "Bluetooth 5.0",
+                    "Microphone": "Built-in mic",
+                    "Weight": "0.58 lbs"
+                }
+            },
+            {
+                id: 3,
+                name: "Electric Kettle",
+                brand: "Cuisinart",
+                category: "Home & Kitchen",
+                price: 59.95,
+                description: "1.7-liter stainless steel electric kettle with auto shut-off",
+                image: "https://placehold.co/600x400?text=Cuisinart+Kettle",
+                rating: 4.5,
+                features: {
+                    "Capacity": "1.7 liters",
+                    "Material": "Stainless steel",
+                    "Features": "Auto shut-off, boil-dry protection",
+                    "Power": "1500 watts",
+                    "Weight": "2.2 lbs"
+                }
+            },
+            {
+                id: 4,
+                name: "Running Shoes",
+                brand: "Nike",
+                category: "Sports",
+                price: 129.99,
+                description: "Lightweight, breathable running shoes with responsive cushioning",
+                image: "https://placehold.co/600x400?text=Nike+Shoes",
+                rating: 4.6,
+                features: {
+                    "Type": "Running shoes",
+                    "Cushioning": "Responsive foam",
+                    "Upper Material": "Breathable mesh",
+                    "Sole Material": "Rubber",
+                    "Weight": "0.7 lbs (per shoe)"
+                }
+            },
+            {
+                id: 5,
+                name: "Bluetooth Speaker",
+                brand: "JBL",
+                category: "Electronics",
+                price: 129.95,
+                description: "Waterproof portable Bluetooth speaker with 12 hours of playtime",
+                image: "https://placehold.co/600x400?text=JBL+Speaker",
+                rating: 4.5,
+                features: {
+                    "Battery Life": "12 hours",
+                    "Waterproof": "IPX7 rated",
+                    "Connectivity": "Bluetooth 4.2",
+                    "Output Power": "20W",
+                    "Weight": "1.21 lbs"
+                }
+            },
+            {
+                id: 6,
+                name: "Digital Camera",
+                brand: "Canon",
+                category: "Electronics",
+                price: 499.00,
+                description: "24.1MP DSLR camera with 18-55mm lens - excellent for beginners",
+                image: "https://placehold.co/600x400?text=Canon+Camera",
+                rating: 4.4,
+                features: {
+                    "Sensor": "24.1MP APS-C CMOS",
+                    "Lens": "18-55mm kit lens",
+                    "ISO Range": "100-6400 (expandable to 12800)",
+                    "Video": "Full HD 1080p",
+                    "Weight": "1.36 lbs (body only)"
+                }
+            },
+            {
+                id: 7,
+                name: "Air Fryer",
+                brand: "Ninja",
+                category: "Home & Kitchen",
+                price: 99.99,
+                description: "4-quart air fryer that cooks faster and up to 30% more crisp than convection ovens",
+                image: "https://placehold.co/600x400?text=Ninja+Air+Fryer",
+                rating: 4.3,
+                features: {
+                    "Capacity": "4 quarts",
+                    "Temperature Range": "105°F-400°F",
+                    "Functions": "Air Fry, Roast, Reheat, Dehydrate",
+                    "Power": "1550 watts",
+                    "Weight": "11.5 lbs"
+                }
+            },
+            {
+                id: 8,
+                name: "Yoga Mat",
+                brand: "Liforme",
+                category: "Sports",
+                price: 79.99,
+                description: "Eco-friendly non-slip yoga mat with alignment markers",
+                image: "https://placehold.co/600x400?text=Liforme+Yoga+Mat",
+                rating: 4.8,
+                features: {
+                    "Material": "Eco-friendly polyurethane",
+                    "Thickness": "4.2mm",
+                    "Size": "72.8 x 26.8 inches",
+                    "Weight": "5.5 lbs",
+                    "Features": "Non-slip, alignment markers"
+                }
+            }
+        ];
+
+        // Additional mock products to reach 12 total
+        const additionalMockProducts = [
+            {
+                id: 9,
+                name: "Smart Watch",
+                brand: "Samsung",
+                category: "Electronics",
+                price: 249.99,
+                description: "Advanced smartwatch with health monitoring and smartphone notifications",
+                image: "https://placehold.co/600x400?text=Samsung+Watch",
+                rating: 4.6,
+                features: {
+                    "Display": "1.4\" AMOLED",
+                    "Battery Life": "Up to 2 days",
+                    "Features": "Heart rate monitor, sleep tracking",
+                    "Water Resistance": "5ATM + IP68",
+                    "Weight": "1.59 oz"
+                }
+            },
+            {
+                id: 10,
+                name: "Stand Mixer",
+                brand: "KitchenAid",
+                category: "Home & Kitchen",
+                price: 399.99,
+                description: "5-quart tilt-head stand mixer with 10 speeds",
+                image: "https://placehold.co/600x400?text=KitchenAid+Mixer",
+                rating: 4.9,
+                features: {
+                    "Capacity": "5 quarts",
+                    "Speeds": "10 speeds",
+                    "Attachments": "Flat beater, wire whip, dough hook",
+                    "Power": "300 watts",
+                    "Weight": "23.2 lbs"
+                }
+            },
+            {
+                id: 11,
+                name: "Leather Wallet",
+                brand: "Fossil",
+                category: "Clothing",
+                price: 45.00,
+                description: "Genuine leather bifold wallet with multiple card slots",
+                image: "https://placehold.co/600x400?text=Fossil+Wallet",
+                rating: 4.5,
+                features: {
+                    "Material": "Genuine leather",
+                    "Style": "Bifold",
+                    "Card Slots": "8 card slots",
+                    "ID Window": "Yes",
+                    "Weight": "0.3 lbs"
+                }
+            },
+            {
+                id: 12,
+                name: "Espresso Machine",
+                brand: "DeLonghi",
+                category: "Home & Kitchen",
+                price: 199.99,
+                description: "15-bar pump pressure espresso and cappuccino machine",
+                image: "https://placehold.co/600x400?text=DeLonghi+Espresso",
+                rating: 4.4,
+                features: {
+                    "Pressure": "15 bar pump",
+                    "Water Tank": "1 liter removable",
+                    "Milk Frother": "Manual frother",
+                    "Power": "1100 watts",
+                    "Weight": "9.9 lbs"
+                }
+            }
+        ];
+
+        // Combine all products
+        const allProducts = [...mockProducts, ...additionalMockProducts];
+        let products = [...allProducts];
+        let recommendations = [];
+        let productsToCompare = [];
+        let brands = [...new Set(allProducts.map(product => product.brand))];
+        let voiceActive = false;
+        let chatActive = false;
+
+        // DOM elements
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const voiceBtn = document.getElementById('voice-btn');
+        const voiceBtnMobile = document.getElementById('voice-btn-mobile');
+        const voiceModal = document.getElementById('voice-modal');
+        const startVoiceBtn = document.getElementById('start-voice');
+        const closeVoiceBtn = document.getElementById('close-voice');
+        const voiceStatus = document.getElementById('voice-status');
+        const chatModal = document.getElementById('chat-modal');
+        const chatToggle = document.getElementById('chat-toggle');
+        const closeChat = document.getElementById('close-chat');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const sendMessage = document.getElementById('send-message');
+        const voiceInputBtn = document.getElementById('voice-input-btn');
+        const voiceRecording = document.getElementById('voice-recording');
+        const stopVoice = document.getElementById('stop-voice');
+        const productsContainer = document.getElementById('products-container');
+        const filterCategory = document.getElementById('filter-category');
+        const filterBrand = document.getElementById('filter-brand');
+        const filterPrice = document.getElementById('filter-price');
+        const productForm = document.getElementById('product-form');
+        const recommendationsContainer = document.getElementById('recommendations-container');
+        const comparisonEmpty = document.getElementById('comparison-empty');
+        const comparisonTableContainer = document.getElementById('comparison-table-container');
+        const comparisonTableBody = document.getElementById('comparison-table-body');
+        const compareCount = document.getElementById('compare-count');
+        const clearComparison = document.getElementById('clear-comparison');
+        const btnBrowseCompare = document.getElementById('btn-browse-compare');
+        const exploreBtn = document.getElementById('explore-btn');
+        const updatePrefsBtn = document.getElementById('update-prefs');
+
+        // Initialize the app
+        function init() {
+            renderProductList();
+            renderBrandFilter();
+            generateRecommendations();
+            setupEventListeners();
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Mobile menu toggle
+            mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+            
+            // Voice assistant buttons
+            voiceBtn.addEventListener('click', openVoiceModal);
+            voiceBtnMobile.addEventListener('click', openVoiceModal);
+            startVoiceBtn.addEventListener('click', toggleVoiceRecognition);
+            closeVoiceBtn.addEventListener('click', closeVoiceModal);
+            
+            // Chat assistant buttons
+            chatToggle.addEventListener('click', toggleChatModal);
+            closeChat.addEventListener('click', closeChatModal);
+            sendMessage.addEventListener('click', sendChatMessage);
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendChatMessage();
+                }
+            });
+            voiceInputBtn.addEventListener('click', toggleVoiceInput);
+            stopVoice.addEventListener('click', stopVoiceInput);
+            
+            // Filter event listeners
+            filterCategory.addEventListener('change', applyFilters);
+            filterBrand.addEventListener('change', applyFilters);
+            filterPrice.addEventListener('change', applyFilters);
+            
+            // Form submission
+            productForm.addEventListener('submit', handleProductFormSubmit);
+            
+            // Comparison buttons
+            clearComparison.addEventListener('click', clearAllComparisons);
+            btnBrowseCompare.addEventListener('click', () => {
+                window.location.href = '#products';
+            });
+            exploreBtn.addEventListener('click', () => {
+                window.location.href = '#products';
+            });
+            
+            // Update preferences
+            updatePrefsBtn.addEventListener('click', showPreferenceModal);
+        }
+
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            mobileMenu.classList.toggle('hidden');
+        }
+
+        // Voice modal functions
+        function openVoiceModal() {
+            voiceModal.classList.remove('hidden');
+        }
+
+        function closeVoiceModal() {
+            voiceModal.classList.add('hidden');
+            if (voiceActive) {
+                stopVoiceRecognition();
+            }
+        }
+
+        function toggleVoiceRecognition() {
+            if (voiceActive) {
+                stopVoiceRecognition();
+            } else {
+                startVoiceRecognition();
+            }
+        }
+
+        function startVoiceRecognition() {
+            voiceActive = true;
+            startVoiceBtn.classList.remove('bg-indigo-600');
+            startVoiceBtn.classList.add('bg-red-500');
+            voiceStatus.innerHTML = '<p class="text-indigo-600 font-medium">Listening... Speak now</p>';
+            simulateVoiceCommand();
+        }
+
+        function stopVoiceRecognition() {
+            voiceActive = false;
+            startVoiceBtn.classList.remove('bg-red-500');
+            startVoiceBtn.classList.add('bg-indigo-600');
+            voiceStatus.innerHTML = '<p class="text-gray-600">Click the microphone to start speaking</p>';
+        }
+
+        // Simulate voice command processing (in a real app, this would connect to a speech recognition API)
+        function simulateVoiceCommand() {
+            setTimeout(() => {
+                if (voiceActive) {
+                    const commands = [
+                        "Show me electronics under $300",
+                        "Find wireless headphones",
+                        "Compare smart TVs",
+                        "Recommend kitchen appliances"
+                    ];
+                    const randomCommand = commands[Math.floor(Math.random() * commands.length)];
+                    processVoiceCommand(randomCommand);
+                }
+            }, 2000);
+        }
+
+        function processVoiceCommand(command) {
+            stopVoiceRecognition();
+            voiceStatus.innerHTML = `<p class="text-gray-600">You said: <span class="font-medium">"${command}"</span></p>`;
+            
+            // Simulate processing
+            setTimeout(() => {
+                if (command.includes("compare")) {
+                    voiceStatus.innerHTML += `<p class="text-indigo-600 mt-2">Opening comparison for ${command.split('compare')[1].trim()}</p>`;
+                    // In a real app, this would navigate to comparison section with relevant products
+                } else if (command.includes("show me") || command.includes("find")) {
+                    voiceStatus.innerHTML += `<p class="text-indigo-600 mt-2">Applying filters for ${command.split('show me')[1] || command.split('find')[1]}</p>`;
+                    // In a real app, this would filter products
+                } else if (command.includes("recommend")) {
+                    voiceStatus.innerHTML += `<p class="text-indigo-600 mt-2">Generating recommendations for ${command.split('recommend')[1].trim()}</p>`;
+                    // In a real app, this would generate recommendations
+                }
+            }, 1000);
+        }
+
+        // Chat modal functions
+        function toggleChatModal() {
+            chatModal.classList.toggle('hidden');
+            chatActive = !chatActive;
+        }
+
+        function closeChatModal() {
+            chatModal.classList.add('hidden');
+            chatActive = false;
+        }
+
+        function sendChatMessage() {
+            const message = chatInput.value.trim();
+            if (message) {
+                addUserMessage(message);
+                chatInput.value = '';
+                respondToChatMessage(message);
+            }
+        }
+
+        function addUserMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'flex mb-4 justify-end';
+            messageDiv.innerHTML = `
+                <div class="bg-indigo-600 text-white rounded-lg p-3 max-w-xs">
+                    <p>${text}</p>
+                </div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addBotMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'flex mb-4';
+            messageDiv.innerHTML = `
+                <img src="https://placehold.co/40x40" alt="AI assistant avatar with friendly face in blue color scheme" class="w-10 h-10 rounded-full mr-3">
+                <div class="bg-gray-100 rounded-lg p-3 max-w-xs">
+                    <p class="text-gray-800">${text}</p>
+                </div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function respondToChatMessage(message) {
+            // Simple chatbot responses
+            setTimeout(() => {
+                const lowerMessage = message.toLowerCase();
+                
+                if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
+                    addBotMessage("Hello! How can I assist you with your shopping today?");
+                } else if (lowerMessage.includes('recommend') || lowerMessage.includes('suggestion')) {
+                    addBotMessage("Based on your preferences, I recommend checking out our electronics section. The Sony Ultra HD Smart TV and Bose Wireless Headphones are very popular right now.");
+                } else if (lowerMessage.includes('compare') || lowerMessage.includes('comparison')) {
+                    addBotMessage("You can compare products by clicking the 'Compare' button on any product card. Would you like me to guide you through the comparison process?");
+                } else if (lowerMessage.includes('price') || lowerMessage.includes('expensive') || lowerMessage.includes('cheap')) {
+                    addBotMessage("I can help you find products within your budget. What price range are you looking for?");
+                } else if (lowerMessage.includes('thank')) {
+                    addBotMessage("You're welcome! Is there anything else I can help you with?");
+                } else {
+                    addBotMessage("I can help you with product recommendations, comparisons, or finding specific items. What would you like to know?");
+                }
+            }, 800);
+        }
+
+        // Voice input in chat
+        function toggleVoiceInput() {
+            voiceRecording.classList.remove('hidden');
+            voiceInputBtn.classList.add('hidden');
+            
+            // In a real app, this would start voice recognition
+            setTimeout(() => {
+                const exampleCommands = [
+                    "Show me the latest electronics",
+                    "What's in my comparison list?",
+                    "Recommend a good gift under $100"
+                ];
+                const randomCommand = exampleCommands[Math.floor(Math.random() * exampleCommands.length)];
+                stopVoiceInput();
+                chatInput.value = randomCommand;
+            }, 3000);
+        }
+
+        function stopVoiceInput() {
+            voiceRecording.classList.add('hidden');
+            voiceInputBtn.classList.remove('hidden');
+        }
+
+        // Product list rendering
+        function renderProductList() {
+            productsContainer.innerHTML = '';
+            
+            if (products.length === 0) {
+                productsContainer.innerHTML = '<p class="text-gray-600 col-span-full text-center py-10">No products match your filters. Try adjusting your search criteria.</p>';
+                return;
+            }
+            
+            products.forEach(product => {
+                const isInComparison = productsToCompare.some(p => p.id === product.id);
+                
+                const productCard = document.createElement('div');
+                productCard.className = 'bg-white rounded-xl shadow-md overflow-hidden product-card transition-300';
+                productCard.innerHTML = `
+                    <div class="relative">
+                        <img src="${product.image}" alt="${product.name} - ${product.description}" class="w-full h-48 object-cover">
+                        <div class="absolute top-2 right-2 bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded">
+                            ${product.rating.toFixed(1)} <i class="fas fa-star"></i>
+                        </div>
+                        <button class="absolute top-2 left-2 p-2 bg-white bg-opacity-80 rounded-full compare-btn ${isInComparison ? 'text-indigo-600' : 'text-gray-600'}" data-id="${product.id}">
+                            <i class="fas fa-balance-scale"></i>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-gray-800">${product.name}</h3>
+                            <span class="font-semibold text-indigo-600">$${product.price.toFixed(2)}</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mb-2">${product.brand} • ${product.category}</p>
+                        <p class="text-sm text-gray-600 line-clamp-2 mb-3">${product.description}</p>
+                        <button class="w-full bg-indigo-100 text-indigo-600 py-2 rounded-lg font-medium hover:bg-indigo-200 transition-300">
+                            View Details
+                        </button>
+                    </div>
+                `;
+                
+                productsContainer.appendChild(productCard);
+            });
+            
+            // Add event listeners to compare buttons
+            document.querySelectorAll('.compare-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const productId = parseInt(this.getAttribute('data-id'));
+                    toggleProductComparison(productId);
+                    
+                    // Update button appearance
+                    const isInComparison = productsToCompare.some(p => p.id === productId);
+                    if (isInComparison) {
+                        this.classList.remove('text-gray-600');
+                        this.classList.add('text-indigo-600');
+                    } else {
+                        this.classList.remove('text-indigo-600');
+                        this.classList.add('text-gray-600');
+                    }
+                });
+            });
+        }
+
+        // Render brand filter options
+        function renderBrandFilter() {
+            filterBrand.innerHTML = '<option value="">All Brands</option>';
+            
+            brands.forEach(brand => {
+                const option = document.createElement('option');
+                option.value = brand;
+                option.textContent = brand;
+                filterBrand.appendChild(option);
+            });
+        }
+
+        // Apply filters to product list
+        function applyFilters() {
+            const categoryFilter = filterCategory.value;
+            const brandFilter = filterBrand.value;
+            const priceFilter = filterPrice.value;
+            
+            products = allProducts.filter(product => {
+                // Category filter
+                if (categoryFilter && product.category !== categoryFilter) {
+                    return false;
+                }
+                
+                // Brand filter
+                if (brandFilter && product.brand !== brandFilter) {
+                    return false;
+                }
+                
+                // Price filter
+                if (priceFilter) {
+                    const [min, max] = priceFilter.split('-').map(Number);
+                    if (min === 0) {
+                        if (max && product.price > max) return false;
+                    } else if (max) {
+                        if (product.price < min || product.price > max) return false;
+                    } else {
+                        if (product.price < min) return false;
+                    }
+                }
+                
+                return true;
+            });
+            
+            renderProductList();
+        }
+
+        // Handle new product form submission
+        function handleProductFormSubmit(e) {
+            e.preventDefault();
+            
+            const newProduct = {
+                id: allProducts.length + 1,
+                name: document.getElementById('product-name').value,
+                brand: document.getElementById('product-brand').value,
+                category: document.getElementById('product-category').value,
+                price: parseFloat(document.getElementById('product-price').value),
+                description: document.getElementById('product-description').value,
+                image: document.getElementById('product-image').value || 'https://placehold.co/600x400?text=No+Image',
+                rating: parseFloat((Math.random() * 1 + 4).toFixed(1)), // Random rating between 4.0 and 5.0
+                features: {
+                    "Material": "Various",
+                    "Weight": "Varies",
+                    "Dimensions": "Varies"
+                }
+            };
+            
+            // Add to all products and current filtered list
+            allProducts.push(newProduct);
+            products.push(newProduct);
+            
+            // Update brands list if new
+            if (!brands.includes(newProduct.brand)) {
+                brands.push(newProduct.brand);
+                renderBrandFilter();
+            }
+            
+            // Reset form
+            productForm.reset();
+            
+            // Update UI
+            renderProductList();
+            
+            // Show success message
+            alert('Product added successfully!');
+        }
+
+        // Generate recommendations (mock logic)
+        function generateRecommendations() {
+            // In a real app, this would be based on user preferences, history, etc.
+            recommendations = [...allProducts]
+                .filter(p => p.category === 'Electronics' || p.category === 'Home & Kitchen')
+                .sort((a, b) => b.rating - a.rating)
+                .slice(0, 4);
+                
+            renderRecommendations();
+        }
+
+        // Render recommendations
+        function renderRecommendations() {
+            recommendationsContainer.innerHTML = '';
+            
+            recommendations.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'bg-white rounded-xl shadow-md overflow-hidden product-card transition-300';
+                productCard.innerHTML = `
+                    <div class="relative">
+                        <img src="${product.image}" alt="${product.name} - ${product.description}" class="w-full h-48 object-cover">
+                        <div class="absolute top-2 right-2 bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded">
+                            ${product.rating.toFixed(1)} <i class="fas fa-star"></i>
+                        </div>
+                        <div class="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+                            <i class="fas fa-thumbs-up"></i>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-gray-800">${product.name}</h3>
+                            <span class="font-semibold text-indigo-600">$${product.price.toFixed(2)}</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mb-2">${product.brand} • ${product.category}</p>
+                        <p class="text-sm text-gray-600 line-clamp-2 mb-3">${product.description}</p>
+                        <button class="w-full bg-indigo-100 text-indigo-600 py-2 rounded-lg font-medium hover:bg-indigo-200 transition-300">
+                            View Details
+                        </button>
+                    </div>
+                `;
+                
+                recommendationsContainer.appendChild(productCard);
+            });
+        }
+
+        // Product comparison functions
+        function toggleProductComparison(productId) {
+            const product = allProducts.find(p => p.id === productId);
+            
+            if (productsToCompare.some(p => p.id === productId)) {
+                // Remove from comparison
+                productsToCompare = productsToCompare.filter(p => p.id !== productId);
+            } else {
+                // Add to comparison (limit to 4)
+                if (productsToCompare.length < 4) {
+                    productsToCompare.push(product);
+                } else {
+                    alert('You can compare up to 4 products at a time. Please remove some products from your comparison list first.');
+                }
+            }
+            
+            updateComparisonUI();
+        }
+
+        function updateComparisonUI() {
+            if (productsToCompare.length === 0) {
+                comparisonEmpty.classList.remove('hidden');
+                comparisonTableContainer.classList.add('hidden');
+            } else {
+                comparisonEmpty.classList.add('hidden');
+                comparisonTableContainer.classList.remove('hidden');
+                compareCount.textContent = productsToCompare.length;
+                renderComparisonTable();
+            }
+            
+            // Update comparison buttons on product cards
+            document.querySelectorAll('.compare-btn').forEach(btn => {
+                const productId = parseInt(btn.getAttribute('data-id'));
+                const isInComparison = productsToCompare.some(p => p.id === productId);
+                
+                if (isInComparison) {
+                    btn.classList.remove('text-gray-600');
+                    btn.classList.add('text-indigo-600');
+                } else {
+                    btn.classList.remove('text-indigo-600');
+                    btn.classList.add('text-gray-600');
+                }
+            });
+        }
+
+        function renderComparisonTable() {
+            // Get all unique feature keys from all products
+            const allFeatures = new Set();
+            productsToCompare.forEach(product => {
+                Object.keys(product.features).forEach(feature => {
+                    allFeatures.add(feature);
+                });
+            });
+            
+            // Create table header row with product names
+            let headerRow = '<tr>';
+            headerRow += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>'; // Empty cell for feature names
+            
+            productsToCompare.forEach(product => {
+                headerRow += `
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <div class="flex items-center">
+                            <img src="${product.image}" alt="${product.name}" class="w-10 h-10 object-cover mr-2">
+                            <div>
+                                <h4 class="font-medium text-gray-800">${product.name}</h4>
+                                <p class="text-indigo-600">$${product.price.toFixed(2)}</p>
+                            </div>
+                            <button class="ml-4 text-gray-400 hover:text-red-500 remove-comparison" data-id="${product.id}">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </th>
+                `;
+            });
+            headerRow += '</tr>';
+            
+            // Create table body with all features
+            let tableBody = '';
+            
+            allFeatures.forEach(feature => {
+                tableBody += '<tr class="compare-highlight">';
+                tableBody += `<td class="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-800">${feature}</td>`;
+                
+                productsToCompare.forEach(product => {
+                    const value = product.features[feature] || 'N/A';
+                    tableBody += `<td class="px-6 py-3 whitespace-nowrap text-sm text-gray-600">${value}</td>`;
+                });
+                
+                tableBody += '</tr>';
+            });
+            
+            // Add ratings row
+            tableBody += '<tr class="compare-highlight">';
+            tableBody += '<td class="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-800">Rating</td>';
+            productsToCompare.forEach(product => {
+                tableBody += `<td class="px-6 py-3 whitespace-nowrap text-sm text-gray-600">${product.rating.toFixed(1)} <i class="fas fa-star text-yellow-400"></i></td>`;
+            });
+            tableBody += '</tr>';
+            
+            // Add brand and category rows
+            ['Brand', 'Category'].forEach(field => {
+                tableBody += '<tr>';
+                tableBody += `<td class="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-800">${field}</td>`;
+                productsToCompare.forEach(product => {
+                    const value = field === 'Brand' ? product.brand : product.category;
+                    tableBody += `<td class="px-6 py-3 whitespace-nowrap text-sm text-gray-600">${value}</td>`;
+                });
+                tableBody += '</tr>';
+            });
+            
+            // Set the HTML
+            comparisonTableBody.innerHTML = headerRow + tableBody;
+            
+            // Add event listeners to remove buttons
+            document.querySelectorAll('.remove-comparison').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const productId = parseInt(this.getAttribute('data-id'));
+                    productsToCompare = productsToCompare.filter(p => p.id !== productId);
+                    updateComparisonUI();
+                });
+            });
+        }
+
+        function clearAllComparisons() {
+            productsToCompare = [];
+            updateComparisonUI();
+        }
+
+        // Preference modal (simplified for this demo)
+        function showPreferenceModal() {
+            alert('In a full implementation, this would show a modal to update your preferences for better recommendations.');
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
